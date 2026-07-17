@@ -7,6 +7,7 @@ import { extension_settings } from '../../../extensions.js';
 import { saveSettingsDebounced } from '../../../../script.js';
 
 const MODULE_NAME = 'sillytavern-apple-dark';
+const extensionFolderPath = \`scripts/extensions/third-party/\${MODULE_NAME}\`;
 
 // Local Extension Settings holding theme variables
 let settings = {
@@ -21,51 +22,38 @@ let settings = {
 };
 
 // Add extension HTML to SillyTavern Settings Panel
-function loadSettingsUI() {
-  const settingsHtml = \`
-    <div class="sillytavern-apple-settings-panel inline-drawer">
-      <div class="inline-drawer-toggle inline-drawer-header">
-        <b>🍎 Apple Dark UI Settings</b>
-        <div class="inline-drawer-icon down"></div>
-      </div>
-      <div class="inline-drawer-content">
-        <p style="font-size: 12px; color: #888; margin-bottom: 10px;">SillyTavern Custom UI Extension Builder로 빌드된 깃허브 호환 테마입니다.</p>
-        
-        <div class="apple-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <label>Accent Color</label>
-          <input type="color" id="apple-accent-picker" value="\${settings.accentColor}">
-        </div>
+async function loadSettingsUI() {
+  try {
+    const settingsHtml = await $.get(\`\${extensionFolderPath}/index.html\`);
+    
+    const container = document.getElementById('extensions_settings2') || document.getElementById('extensions_settings');
+    if (container) {
+      jQuery(container).append(settingsHtml);
+    } else {
+      console.warn("Could not find SillyTavern extensions settings container.");
+    }
+    
+    // Initialize values in UI
+    jQuery('#apple-accent-picker').val(settings.accentColor);
+    jQuery('#apple-opacity-range').val(settings.backdropOpacity);
+    jQuery('#apple-opacity-label').text(\`Frosted Glass Opacity (\${settings.backdropOpacity})\`);
+    
+    // Bind live UI events in SillyTavern
+    jQuery('#apple-accent-picker').on('input', function() {
+      settings.accentColor = jQuery(this).val();
+      document.documentElement.style.setProperty('--apple-accent-color', settings.accentColor);
+      saveSettings();
+    });
 
-        <div class="apple-setting-row" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
-          <label>Frosted Glass Opacity (\${settings.backdropOpacity})</label>
-          <input type="range" id="apple-opacity-range" min="0.1" max="1.0" step="0.05" value="\${settings.backdropOpacity}">
-        </div>
-        
-        <small style="color: #888;">Settings are persistently synced in browser state.</small>
-      </div>
-    </div>
-  \`;
-  
-  const container = document.getElementById('extensions_settings2') || document.getElementById('extensions_settings');
-  if (container) {
-    jQuery(container).append(settingsHtml);
-  } else {
-    console.warn("Could not find SillyTavern extensions settings container.");
+    jQuery('#apple-opacity-range').on('input', function() {
+      settings.backdropOpacity = parseFloat(jQuery(this).val());
+      jQuery('#apple-opacity-label').text(\`Frosted Glass Opacity (\${settings.backdropOpacity})\`);
+      document.documentElement.style.setProperty('--apple-glass-opacity', settings.backdropOpacity);
+      saveSettings();
+    });
+  } catch (err) {
+    console.error("Failed to load settings UI for Apple Dark UI", err);
   }
-  
-  // Bind live UI events in SillyTavern
-  jQuery('#apple-accent-picker').on('input', function() {
-    settings.accentColor = jQuery(this).val();
-    document.documentElement.style.setProperty('--apple-accent-color', settings.accentColor);
-    saveSettings();
-  });
-
-  jQuery('#apple-opacity-range').on('input', function() {
-    settings.backdropOpacity = parseFloat(jQuery(this).val());
-    jQuery(this).prev('label').text(\`Frosted Glass Opacity (\${settings.backdropOpacity})\`);
-    document.documentElement.style.setProperty('--apple-glass-opacity', settings.backdropOpacity);
-    saveSettings();
-  });
 }
 
 function saveSettings() {
