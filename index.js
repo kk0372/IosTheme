@@ -3,6 +3,9 @@
  * Built automatically via SillyTavern Custom UI Extension Builder
  */
 
+import { extension_settings } from '../../../extensions.js';
+import { saveSettingsDebounced } from '../../../../script.js';
+
 const MODULE_NAME = 'sillytavern-apple-dark';
 
 // Local Extension Settings holding theme variables
@@ -66,10 +69,10 @@ function loadSettingsUI() {
 }
 
 function saveSettings() {
-  if (!window.SillyTavern || !SillyTavern.getContext) return;
-  const context = SillyTavern.getContext();
-  context.extensionSettings[MODULE_NAME] = settings;
-  context.saveSettings();
+  extension_settings[MODULE_NAME] = settings;
+  if (typeof saveSettingsDebounced === 'function') {
+    saveSettingsDebounced();
+  }
 }
 
 // Register custom Slash commands selected by the user
@@ -101,17 +104,15 @@ function registerCommands() {
 
 // On document load
 jQuery(async () => {
-  if (!window.SillyTavern || !SillyTavern.getContext) {
-    console.error("SillyTavern context not found. Apple Dark UI theme might not work properly.");
-    return;
+  // Add a slight delay to ensure SillyTavern UI is fully initialized before injecting our settings
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  // Initialize settings
+  extension_settings[MODULE_NAME] = extension_settings[MODULE_NAME] || {};
+  if (Object.keys(extension_settings[MODULE_NAME]).length === 0) {
+    Object.assign(extension_settings[MODULE_NAME], settings);
   }
-  
-  const context = SillyTavern.getContext();
-  
-  // Restore saved configurations
-  if (context.extensionSettings[MODULE_NAME]) {
-    settings = { ...settings, ...context.extensionSettings[MODULE_NAME] };
-  }
+  settings = { ...settings, ...extension_settings[MODULE_NAME] };
   
   loadSettingsUI();
   registerCommands();
