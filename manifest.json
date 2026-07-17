@@ -4,9 +4,8 @@
   "description": "Premium Apple style dark-mode themed layout with custom quick actions (Translate, TTS, Re-roll).",
   "author": "SillyTavern Designer",
   "version": "1.0.0",
-  "entry_point": "index.js",
   "css": "style.css",
-  "js": ["index.js"],
+  "js": "index.js",
   "requires": [],
   "settings": {
     "accentColor": "#007aff",
