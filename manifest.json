@@ -1,0 +1,16 @@
+{
+  "name": "sillytavern-apple-dark",
+  "display_name": "Apple Dark Custom Extension",
+  "description": "Premium Apple style dark-mode themed layout with custom quick actions (Translate, TTS, Re-roll).",
+  "author": "SillyTavern Designer",
+  "version": "1.0.0",
+  "entry_point": "index.js",
+  "css": "style.css",
+  "js": ["index.js"],
+  "requires": [],
+  "settings": {
+    "accentColor": "#007aff",
+    "borderRadius": "12px",
+    "backdropOpacity": 0.85
+  }
+}
